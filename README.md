@@ -36,6 +36,20 @@ Here is a minimal example of a compatible configuration:
       <username>%EMAILADDRESS%</username>
     </incomingServer>
 
+    <!-- Optional: CalDAV / CardDAV. The extension reads the <serverURL>
+         hostnames here and registers them for OAuth2 too, so Thunderbird
+         offers OAuth2 when you add a calendar or address book. -->
+    <calendar type="caldav">
+      <serverURL>https://dav.example.com/dav/calendars</serverURL>
+      <username>%EMAILADDRESS%</username>
+      <authentication>OAuth2</authentication>
+    </calendar>
+    <addressBook type="carddav">
+      <serverURL>https://dav.example.com/dav/addressbooks</serverURL>
+      <username>%EMAILADDRESS%</username>
+      <authentication>OAuth2</authentication>
+    </addressBook>
+
     <!-- This block is what the extension looks for -->
     <oAuth2>
       <issuer>https://auth.domain.com/application/o/mail/</issuer>
@@ -48,6 +62,25 @@ Here is a minimal example of a compatible configuration:
   </emailProvider>
 </clientConfig>
 ```
+
+#### CalDAV / CardDAV
+
+Thunderbird resolves OAuth2 for calendars and address books through the same
+`OAuth2Providers` registry it uses for mail, looked up **by hostname**. If your
+DAV server runs on a different hostname than IMAP/SMTP (e.g. `dav.example.com`),
+add a `<calendar type="caldav">` and/or `<addressBook type="carddav">` block
+with a `<serverURL>`; the extension extracts the hostname and registers it
+against the same `<oAuth2>` issuer. When you then add a calendar/address book
+pointing at that host, Thunderbird offers OAuth2 and reuses the mail token.
+
+Notes:
+*   Discovery is separate from auth — add the calendar/address book the normal
+    way (manual URL, or DNS SRV / `.well-known` discovery). OAuth2 applies once
+    the URL is on a registered hostname.
+*   Thunderbird prefers a saved password login for a DAV origin over OAuth2 if
+    one exists, so use OAuth2 on a fresh setup.
+*   The IdP receives the same `<scope>` as mail. If your DAV resource server
+    requires a dav-specific scope, include it in the shared `<scope>` value.
 
 ### How it works
 
