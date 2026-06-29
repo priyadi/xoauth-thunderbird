@@ -36,19 +36,47 @@ var OAuthRegistry = {
       `[XOAuthTB] Registering: ${issuer} for ${hostnames.join(", ")}`,
     );
 
-    const details = {
-      name: issuer,
-      clientId,
-      clientSecret: clientSecret || undefined,
-      issuerIdentifier: issuer,
-      authorizationEndpoint: authURL,
-      tokenEndpoint: tokenURL,
-      redirectionEndpoint: redirectUri,
-      usePKCE: usePKCE !== false,
-      useExternalBrowser: true, // required for passkey authentication
-    };
-
-    OAuth2Providers.registerProvider(details, hostnames, scope);
+    // OAuth2Providers.registerProvider has two incompatible upstream
+    // signatures. Newer comm-central takes a single details object
+    // (registerProvider(details, hostnames, scopes), arity 3); older releases
+    // such as Thunderbird 140 take positional arguments
+    // (registerProvider(issuer, clientId, ..., hostnames, scopes), arity 9).
+    // Discriminate on the function's arity.
+    //
+    // External browser use (required for passkey authentication) is requested
+    // via the per-provider useExternalBrowser field on the object signature,
+    // and via the global mailnews.oauth.useExternalBrowser pref (set in
+    // main.js) on the positional signature. Both require a loopback HTTP
+    // redirect URI.
+    if (OAuth2Providers.registerProvider.length <= 3) {
+      OAuth2Providers.registerProvider(
+        {
+          name: issuer,
+          clientId,
+          clientSecret: clientSecret || undefined,
+          issuerIdentifier: issuer,
+          authorizationEndpoint: authURL,
+          tokenEndpoint: tokenURL,
+          redirectionEndpoint: redirectUri,
+          usePKCE: usePKCE !== false,
+          useExternalBrowser: true,
+        },
+        hostnames,
+        scope,
+      );
+    } else {
+      OAuth2Providers.registerProvider(
+        issuer,
+        clientId,
+        clientSecret || null,
+        authURL,
+        tokenURL,
+        redirectUri,
+        usePKCE !== false,
+        hostnames,
+        scope,
+      );
+    }
 
     console.log(`[XOAuthTB] Successfully registered: ${issuer}`);
   },
