@@ -9,6 +9,8 @@ this.xoauthtb = class extends ExtensionCommon.ExtensionAPI {
   onStartup() {
     console.log("[XOAuthTB] Extension starting...");
 
+    Services.prefs.setBoolPref("mailnews.oauth.useExternalBrowser", true);
+
     const cacheBuster = Date.now();
     const sandbox = Components.utils.Sandbox(
       Services.scriptSecurityManager.getSystemPrincipal(),

@@ -36,17 +36,19 @@ var OAuthRegistry = {
       `[XOAuthTB] Registering: ${issuer} for ${hostnames.join(", ")}`,
     );
 
-    OAuth2Providers.registerProvider(
-      issuer,
+    const details = {
+      name: issuer,
       clientId,
-      clientSecret,
-      authURL,
-      tokenURL,
-      redirectUri,
-      usePKCE,
-      hostnames,
-      scope,
-    );
+      clientSecret: clientSecret || undefined,
+      issuerIdentifier: issuer,
+      authorizationEndpoint: authURL,
+      tokenEndpoint: tokenURL,
+      redirectionEndpoint: redirectUri,
+      usePKCE: usePKCE !== false,
+      useExternalBrowser: true, // required for passkey authentication
+    };
+
+    OAuth2Providers.registerProvider(details, hostnames, scope);
 
     console.log(`[XOAuthTB] Successfully registered: ${issuer}`);
   },

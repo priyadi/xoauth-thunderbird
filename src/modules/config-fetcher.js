@@ -152,7 +152,7 @@ var ConfigFetcher = {
         clientSecret: getTag("clientSecret") || null,
         authURL: getTag("authURL") || getTag("authUrl"),
         tokenURL: getTag("tokenURL") || getTag("tokenUrl"),
-        redirectUri: getTag("redirectUri") || "https://localhost",
+        redirectUri: getTag("redirectUri") || "http://127.0.0.1",
         usePKCE: (getTag("usePKCE") || "true").toLowerCase() === "true",
         scope: getTag("scope"),
         hostnames,
